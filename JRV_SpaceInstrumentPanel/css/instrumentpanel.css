@@ -1,0 +1,76 @@
+@font-face {
+  font-family: 'cousine';
+  src: url('../fonts/Cousine-Bold.ttf') format('truetype');
+}
+
+body {
+    user-select: none;
+    background-color: black;
+    padding: 40px;
+    margin: 0px;
+    cursor: none;
+}
+
+#instrumentpanel {
+  height: 100%;
+  width: 100%;
+  cursor: none;
+}
+
+#attitude {
+  position: absolute;
+  top: 25px;
+  left: 38.5%;
+  z-index: -10;
+}
+
+.instrumentBorder {
+    border: 5px solid #134;
+    border-radius: 40px;
+    padding: 40px;
+    height: calc(100% - 80px);
+}
+
+.instrumentTextTable {
+  color: #36B1ED;
+  font-family: 'cousine';
+  width: 100%;
+  font-size: 30;
+  width: 100%;
+}
+
+.controlTable {
+  margin-top: 56px;
+  color: #36B1ED;
+  font-family: 'cousine';
+  width: 100%;
+  font-size: 30;
+  width: 100%;
+  text-align: center;
+  border-spacing: 5px;
+}
+
+.controlTable td {
+  border: 5px solid #134;
+}
+
+.fuelTankDiv {
+  border: 5px solid #134;
+  width: 95px;
+  height: 450px;
+  margin: 36px 0px;
+}
+
+.fuelLevelDiv {
+  border: 5px solid #C3B150;
+  background-color: #625928;
+  height: 396px;
+  margin-top: calc(54px - 10px);
+}
+
+.fuelLevelDivAux {
+  border: 5px solid #C3B150;
+  background-color: #625928;
+  height: 383px;
+  margin-top: calc(67px - 10px);
+}

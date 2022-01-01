@@ -1,0 +1,394 @@
+<head>
+    <meta charset="utf-8">
+    <!-- This page style -->
+    <link rel="stylesheet" type="text/css" href="css/instrumentpanel.css" />
+    <!-- Flight Indicators library styles -->
+    <link rel="stylesheet" type="text/css" href="css/attitudeindicator.css" />
+    <title>JRV_SpaceInstrumentPanel.html</title>
+</head>
+
+<body id="instrumentbody">
+	<table id="instrumentpanel">
+		<tr>
+			<td style='width: 30%'>
+				<div class="instrumentBorder">
+					<table class="instrumentTextTable">
+						<tr>
+							<td>
+								FUEL-MAIN
+							</td>
+							<td>
+								FUEL-AUX
+							</td>
+						</tr>
+
+						<tr>
+							<td>
+								<div class="fuelTankDiv">
+									<div class="fuelLevelDiv">
+									</div>
+								</div>
+							</td>
+							<td>
+								<div class="fuelTankDiv">
+									<div class="fuelLevelDivAux">
+									</div>
+								</div>
+							</td>
+						</tr>
+
+						<tr>
+							<td id='fuelMainText'>
+								2.475 KG
+							</td>
+							<td>
+								0.178 KG
+							</td>
+						</tr>
+
+						<tr>
+							<td id='fuelCapText'>
+								THRT&nbsp;&nbsp;10 %
+							</td>
+							<td>
+								THRT&nbsp;&nbsp;0 %
+							</td>
+						</tr>
+
+						<tr>
+							<td id='fuelMinsText'>
+								214.99 M
+							</td>
+							<td>
+								15.24 M
+							</td>
+						</tr>
+					</table>
+
+					<table class="controlTable">
+						<tr>
+							<td>
+								MODE
+							</td>
+							<td>
+								CONFIG
+							</td>
+						</tr>
+
+						<tr>
+							<td>
+								COMMAND
+							</td>
+							<td>
+								LOG
+							</td>
+						</tr>
+
+						<tr>
+							<td>
+								PLAN
+							</td>
+							<td>
+								TRANSFER
+							</td>
+						</tr>
+					</table>
+				</div>
+			</td>
+			
+			<td style='width: calc(70% - 40px); padding-left: 40px;'>
+				<div class="instrumentBorder">
+					<table class="instrumentTextTable">
+						<tr>
+							<td id="clockText" style='width: 700px;'>
+								CLOCK
+							</td>
+							<td id="altitudeText">
+								ALTITUDE
+							</td>
+						</tr>
+						<tr>
+							<td id="velocityText">
+								VELOCITY
+							</td>
+							<td id="headingText">
+								HEADING
+							</td>
+						</tr>
+
+						<tr>
+							<td>
+								<div style='height: 660px' />
+							</td>
+						</tr>
+					</table>
+
+					<table class="instrumentTextTable">
+						<tr>
+							<td>
+								PRESSURE&nbsp;&nbspVACUUM
+							</td>
+							<td></td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>
+								<br />
+							</td>
+						</tr>
+						<tr>
+							<td id="thrustUpText" style='width: 33%;'>
+								THRUST-UP
+							</td>
+							<td  id="thrustLeftText" style='width: 33%;'>
+								THRUST-LEFT
+							</td>
+							<td id="thrustCWText" style='width: 33%;'>
+								THRUST-CW
+							</td>
+						</tr>
+						<tr>
+							<td id="thrustDownText">
+								THRUST-DOWN
+							</td>
+							<td id="thrustRightText">
+								THRUST-RIGHT
+							</td>
+							<td id="thrustCCWText">
+								THRUST-CCW
+							</td>
+						</tr>
+					</table>
+
+					<div id="attitude" />
+				</div>
+			</td>
+		</tr>
+	</table>  
+</body>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+<script src="js/jquery.flightindicators.js"></script>
+
+<script type="text/javascript">
+	window.alert('click the screen to enter full-screen mode. Controls: Arrow Keys, Z, X');
+
+	var attitude = $.flightIndicator('#attitude', 'attitude', {roll: 0, pitch: 0, size: 995, showBox: false});
+
+	var keymap = {};
+
+	var roll = 1.7;
+	var pitch = 9;
+	const maxPitch = 30;
+	var heading = 10.76;
+
+	var rollAcceleration = 0.01;
+	var pitchAcceleration = 0.003;
+	var headingAcceleration = -0.0045;
+
+	var rollJ = 0.014;
+	var pitchJ = 0.014;
+	var headingJ = 0.014;
+
+	var deceleration = 14.7;
+
+	var rollJdecel = rollJ / deceleration;
+	var pitchJdecel = pitchJ / deceleration;
+	var headingJdecel = headingJ / deceleration;
+
+	var minute = 17;
+	var second = 32;
+	var millisecond = 250;
+
+	var velocity = 93041.70;
+	var velocityAcceleration = 0.1254;
+
+	var clockText = document.getElementById('clockText');
+	var altitudeText = document.getElementById('altitudeText');
+	var velocityText = document.getElementById('velocityText');
+	var headingText = document.getElementById('headingText');
+
+	var thrustLeft = 'OFF';
+	var thrustRight = 'OFF';
+	var thrustUp = 'OFF';
+	var thrustDown = 'OFF';
+	var thrustCW = 'OFF';
+	var thrustCCW = 'OFF';
+
+	var thrustUpText = document.getElementById('thrustUpText');
+	var thrustDownText = document.getElementById('thrustDownText');
+	var thrustLeftText = document.getElementById('thrustLeftText');
+	var thrustRightText = document.getElementById('thrustRightText');
+	var thrustCWText = document.getElementById('thrustCWText');
+	var thrustCCWText = document.getElementById('thrustCCWText');
+
+	var altitude = 6404.3412;
+
+	var fuelMain = 2.475;
+
+	var fuelMainText = document.getElementById('fuelMainText');
+	var fuelCapText = document.getElementById('fuelCapText');
+
+	setInterval(function() {
+		var inputKeys = false;
+
+		if (keymap[39]) { // Right
+			rollAcceleration -= rollJ;
+			thrustCW = 'ON';
+			inputKeys = true;
+		}
+		if (keymap[37]) { // Left
+			rollAcceleration += rollJ;
+			thrustCCW = 'ON';
+			inputKeys = true;
+		}
+		if (keymap[38]) { // Up
+			pitchAcceleration -= pitchJ;
+			thrustDown = 'ON';
+			inputKeys = true;
+		}
+		if (keymap[40]) { // Down
+			pitchAcceleration += pitchJ;
+			thrustUp = 'ON';
+			inputKeys = true;
+		}
+		if (keymap[90]) { // Z
+			thrustLeft = 'ON';
+			headingAcceleration -= headingJ;
+		}
+		if (keymap[88]) { // X
+			thrustRight = 'ON';
+			headingAcceleration += headingJ;
+		}
+
+		if (!inputKeys) {
+			if (rollAcceleration > 0) {
+				thrustCCW = 'RETRO'; thrustCW = 'OFF';
+				rollAcceleration -= rollJdecel;
+			}
+			else if (rollAcceleration < 0) {
+				thrustCW = 'RETRO'; thrustCCW = 'OFF';
+				rollAcceleration += rollJdecel;
+			}
+
+			if (pitchAcceleration > 0) {
+				thrustUp = 'RETRO'; thrustDown = 'OFF';
+				pitchAcceleration -= pitchJdecel;
+			}
+			else if (pitchAcceleration < 0) {
+				thrustDown = 'RETRO'; thrustUp = 'OFF';
+				pitchAcceleration += pitchJdecel;
+			}
+
+			if (headingAcceleration > 0) {
+				thrustRight = 'RETRO'; thrustLeft = 'OFF';
+				headingAcceleration -= headingJdecel;
+			}
+			else if (headingAcceleration < 0) {
+				thrustLeft = 'RETRO'; thrustRight = 'OFF';
+				headingAcceleration += headingJdecel;
+			}
+		}
+
+		if (Math.abs(rollAcceleration) < rollJdecel) {
+			thrustCW = 'OFF'; thrustCCW = 'OFF';
+			rollAcceleration = 0;
+		}
+		if (Math.abs(pitchAcceleration) < pitchJdecel) {
+			thrustDown = 'OFF'; thrustUp = 'OFF';
+			pitchAcceleration = 0;
+		}
+		if (Math.abs(headingAcceleration) < headingJdecel) {
+			thrustRight = 'OFF'; thrustLeft = 'OFF';
+			headingAcceleration = 0;
+		}
+
+		roll += rollAcceleration;
+		pitch += pitchAcceleration;
+
+		heading += headingAcceleration;
+		if (roll > 0) {
+			heading -= pitchAcceleration * Math.abs(roll / 360);
+		}
+		else if (roll < 0) {
+			heading += pitchAcceleration * Math.abs(roll / 360);
+		}
+
+		if (pitch > maxPitch) {
+			pitch = maxPitch;
+			pitchAcceleration = 0;
+		}
+		else if (pitch < -maxPitch)
+		{
+			pitch = -maxPitch;
+			pitchAcceleration = 0;
+		}
+
+		if (heading >= 360) {
+			heading -= 360;
+		}
+		else if (heading < 0) {
+			heading += 360
+		}
+
+		attitude.setRoll(roll);
+		attitude.setPitch(pitch);
+		headingText.textContent = 'HEADING' + '\xa0' + '\xa0' + heading.toFixed(2) + '\xa0' + '\xa0' + 'DEG';
+
+		millisecond += 49;
+		if (millisecond >= 1000) {
+			millisecond = 0;
+			second++;
+		}
+		if (second === 60) {
+			second = 0;
+			minute ++;
+		}
+		clockText.textContent = 'CLOCK' + '\xa0' + '\xa0' + '+0000-00-00 00:' 
+			+ String(minute).padStart(2, '0') + ':' 
+			+ String(second).padStart(2, '0') + ':' + String(millisecond).padStart(3, '0');
+
+		velocity += velocityAcceleration;
+		velocityText.textContent = 'VELOCITY' + '\xa0' + '\xa0' + velocity.toFixed(2) + '\xa0' + '\xa0' + 'KM/HR';
+
+		thrustUpText.textContent = 'THRUST-UP' + '\xa0' + '\xa0' + thrustUp;
+		thrustDownText.textContent = 'THRUST-DOWN' + '\xa0' + '\xa0' + thrustDown;
+		thrustLeftText.textContent = 'THRUST-LEFT' + '\xa0' + '\xa0' + thrustLeft;
+		thrustRightText.textContent = 'THRUST-RIGHT' + '\xa0' + '\xa0' + thrustRight;
+		thrustCWText.textContent = 'THRUST-CW' + '\xa0' + '\xa0' + thrustCW;
+		thrustCCWText.textContent = 'THRUST-CCW' + '\xa0' + '\xa0' + thrustCCW;
+
+		altitude += 0.177604;
+		altitudeText.textContent = 'ALTITUDE' + '\xa0' + '\xa0' + altitude.toFixed(3) + '\xa0' + '\xa0' + 'KM';
+
+		fuelMain -= 0.00013;
+		fuelMainText.textContent = fuelMain.toFixed(3) + ' KG';
+
+		fuelCap = (fuelMain / 2.816) * 10;
+		fuelCapText.textContent = 'THRT' + '\xa0' + '\xa0' + fuelCap.toFixed(1) + ' %';
+
+		fuelMins = fuelCap * 24.43042;
+		fuelMinsText.textContent = fuelMins.toFixed(2) + ' M';
+	}, 50);
+
+	onkeydown = onkeyup = function(e){
+		e = e || event; // to deal with IE
+		keymap[e.keyCode] = e.type == 'keydown';
+	}
+
+	var elem = document.getElementById("instrumentbody");
+
+	function openFullscreen() {
+	if (elem.requestFullscreen) {
+		elem.requestFullscreen();
+	} else if (elem.webkitRequestFullscreen) { /* Safari */
+		elem.webkitRequestFullscreen();
+	} else if (elem.msRequestFullscreen) { /* IE11 */
+		elem.msRequestFullscreen();
+	}
+	}
+
+	$('#instrumentbody').click(function(event) { 
+		openFullscreen();
+	});
+</script>
